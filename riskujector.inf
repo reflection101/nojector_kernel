@@ -1,0 +1,77 @@
+;
+; riskujector.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=System ; TODO: specify appropriate Class
+ClassGuid={4d36e97d-e325-11ce-bfc1-08002be10318} ; TODO: specify appropriate ClassGuid
+Provider=%ManufacturerName%
+CatalogFile=riskujector.cat
+DriverVer= ; TODO: set DriverVer in stampinf property pages
+PnpLockdown=1
+
+[DestinationDirs]
+DefaultDestDir = 12
+riskujector_Device_CoInstaller_CopyFiles = 11
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+riskujector.sys  = 1,,
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%riskujector.DeviceDesc%=riskujector_Device, Root\riskujector ; TODO: edit hw-id
+
+[riskujector_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+riskujector.sys
+
+;-------------- Service installation
+[riskujector_Device.NT.Services]
+AddService = riskujector,%SPSVCINST_ASSOCSERVICE%, riskujector_Service_Inst
+
+; -------------- riskujector driver install sections
+[riskujector_Service_Inst]
+DisplayName    = %riskujector.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\riskujector.sys
+
+;
+;--- riskujector_Device Coinstaller installation ------
+;
+
+[riskujector_Device.NT.CoInstallers]
+AddReg=riskujector_Device_CoInstaller_AddReg
+CopyFiles=riskujector_Device_CoInstaller_CopyFiles
+
+[riskujector_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[riskujector_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[riskujector_Device.NT.Wdf]
+KmdfService =  riskujector, riskujector_wdfsect
+[riskujector_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="<Your manufacturer name>" ;TODO: Replace with your manufacturer name
+DiskName = "riskujector Installation Disk"
+riskujector.DeviceDesc = "riskujector Device"
+riskujector.SVCDESC = "riskujector Service"
